@@ -19,6 +19,10 @@ public class Main extends Activity {
     public static final int CONNECTING = 12;
     public static final int CONNECTED = 13;
 
+    public static final int EVENT_WLAN_ADDRESS_ACQUIRED = 21;
+    public static final int EVENT_UI_UPDATE = 22;
+
+
     Button mButton;
     Recorder mRecoder;
     int mStatus;
@@ -74,10 +78,17 @@ public class Main extends Activity {
         }
     }
 
-    private class UiUpdateHandler extends Handler{
+    private class EventHandler extends Handler{
         @Override
         public void handleMessage(Message msg){
-            displayButton(msg.what);
+            switch(msg.what){
+                case EVENT_UI_UPDATE:
+                    displayButton(msg.what);
+                    break;
+                case EVENT_WLAN_ADDRESS_ACQUIRED:
+
+                    break;
+            }
         }
     }
 }

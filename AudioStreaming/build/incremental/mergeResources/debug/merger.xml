@@ -86,6 +86,21 @@
                 </style>
             </file>
             <file
+                name="sharp_rect_blue"
+                path="/home/suzuno/Android/AudioStreamingProject/AudioStreaming/src/main/res/drawable-nodpi/sharp_rect_blue.xml"
+                qualifiers="nodpi"
+                type="drawable" />
+            <file
+                name="sharp_rect_green"
+                path="/home/suzuno/Android/AudioStreamingProject/AudioStreaming/src/main/res/drawable-nodpi/sharp_rect_green.xml"
+                qualifiers="nodpi"
+                type="drawable" />
+            <file
+                name="sharp_rect_red"
+                path="/home/suzuno/Android/AudioStreamingProject/AudioStreaming/src/main/res/drawable-nodpi/sharp_rect_red.xml"
+                qualifiers="nodpi"
+                type="drawable" />
+            <file
                 name="main"
                 path="/home/suzuno/Android/AudioStreamingProject/AudioStreaming/src/main/res/layout/main.xml"
                 qualifiers=""
@@ -101,21 +116,6 @@
                     <!-- API 14 theme customizations can go here. -->
                 </style>
             </file>
-            <file
-                name="sharp_rect_blue"
-                path="/home/suzuno/Android/AudioStreamingProject/AudioStreaming/src/main/res/drawable-nodpi/sharp_rect_blue.xml"
-                qualifiers="nodpi"
-                type="drawable" />
-            <file
-                name="sharp_rect_green"
-                path="/home/suzuno/Android/AudioStreamingProject/AudioStreaming/src/main/res/drawable-nodpi/sharp_rect_green.xml"
-                qualifiers="nodpi"
-                type="drawable" />
-            <file
-                name="sharp_rect_red"
-                path="/home/suzuno/Android/AudioStreamingProject/AudioStreaming/src/main/res/drawable-nodpi/sharp_rect_red.xml"
-                qualifiers="nodpi"
-                type="drawable" />
         </source>
         <source path="/home/suzuno/Android/AudioStreamingProject/AudioStreaming/build/res/rs/debug" />
     </dataSet>

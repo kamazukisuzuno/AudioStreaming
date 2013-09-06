@@ -8,8 +8,10 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Enumeration;
 
 /**
  * Created by suzuno on 13-9-3.
@@ -25,6 +27,7 @@ public class NetListener {
     public static final byte TYPE_DECLINE = 024;
     public static final byte TYPE_DISCONN = 025;
     public static final byte TYPE_ACCCONN = 026;
+    private static final String BROADCAST_ADDRESS = "255.255.255.255";
 
     int mBroadcastRepeatCount = 10;
     int mBufferSize = 2048;
@@ -32,15 +35,12 @@ public class NetListener {
     Handler mHandler;
 
     String mLocalWanIP;
+    String mHostName;
 
     volatile boolean mListening;
 
     public NetListener(Handler handler){
         mHandler = handler;
-    }
-
-    public void acquireWlanAddress(){
-
     }
 
     public void startListening(){
@@ -51,25 +51,56 @@ public class NetListener {
         new BroadcastThread().start();
     }
 
-    private void broadcast(String localIP) throws IOException, InterruptedException {
-        if(localIP==null) return;
+    public void getWlanAddress(){
+        new AcquireLocalWanAddressThread().start();
+    }
+
+    private void sendData(byte type,byte sequence,byte[] data,String targetIP) throws IOException, InterruptedException {
+        Packet p = new Packet();
+
+        p.mAddress = mLocalWanIP;
+        p.mType = type;
+        p.mSequence = sequence;
+        p.mData = data;
 
         DatagramSocket socket;
         DatagramPacket packet;
 
-        byte[] data = localIP.getBytes();
+        byte[] packetData = p.getBytes();
 
         socket = new DatagramSocket();
         socket.setBroadcast(true);
+        packet = new DatagramPacket(packetData,packetData.length, InetAddress.getByName(targetIP),PORT);
 
         for(int i=0;i<mBroadcastRepeatCount;i++){
-            packet = new DatagramPacket(data,data.length, InetAddress.getByName("255.255.255.255"),PORT);
             socket.send(packet);
             Thread.currentThread().sleep(100);
         }
     }
 
-    private void listen() throws IOException {
+    private void acquireWlanAddress() throws SocketException, UnknownHostException {
+        String local = null;
+        Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces();
+        while(e.hasMoreElements()){
+            NetworkInterface ni = e.nextElement();
+            String name = ni.getName();
+            if(name.contains("wlan")){
+                Enumeration<InetAddress> enumeration = ni.getInetAddresses();
+                while (enumeration.hasMoreElements()){
+                    InetAddress adr = enumeration.nextElement();
+                    String address = adr.getHostAddress();
+                    if(!address.contains("wlan")) local = address;
+                }
+            }
+        }
+        mLocalWanIP= local==null?InetAddress.getLocalHost().getHostAddress():local;
+    }
+
+    private void broadcast() throws IOException, InterruptedException {
+        sendData(TYPE_REQDECL,(byte)0,mHostName.getBytes(),BROADCAST_ADDRESS);
+    }
+
+    private void listen() throws IOException, InterruptedException {
         byte[] buffer = new byte[mBufferSize];
 
         DatagramSocket socket = new DatagramSocket(9000);
@@ -87,6 +118,10 @@ public class NetListener {
                 switch(p.mType){
                     case TYPE_DECLARE:
                         dealDeclare(p.mAddress,p.mData);
+                        break;
+                    case TYPE_REQDECL:
+                        dealRequestDeclare(p);
+                        break;
                 }
             }
         }
@@ -99,6 +134,11 @@ public class NetListener {
         bundle.putString("host_name",new String(hostname));
         bundle.putString("host_address",ip);
         mHandler.sendMessage(message);
+    }
+
+    private void dealRequestDeclare(Packet p) throws IOException, InterruptedException {
+        String address = p.mAddress;
+        sendData(TYPE_DECLARE,(byte)0,mHostName.getBytes(),address);
     }
 
     private Packet assemblePacket(byte[] data){
@@ -187,6 +227,20 @@ public class NetListener {
         }
     }
 
+    private class AcquireLocalWanAddressThread extends Thread{
+        @Override
+        public void run(){
+            try{
+                acquireWlanAddress();
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            } catch (SocketException e) {
+                e.printStackTrace();
+            }
+            mHandler.sendEmptyMessage(Main.EVENT_WLAN_ADDRESS_ACQUIRED);
+        }
+    }
+
     private class ListeningThread extends Thread{
         @Override
         public void run(){
@@ -196,6 +250,8 @@ public class NetListener {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -204,7 +260,7 @@ public class NetListener {
         @Override
         public void run(){
             try {
-                broadcast(mLocalWanIP);
+                broadcast();
             } catch (SocketException e) {
                 e.printStackTrace();
             } catch (InterruptedException e) {
