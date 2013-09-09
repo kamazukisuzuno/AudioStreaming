@@ -2,10 +2,10 @@
 <merger>
 
     <dataSet config="main" >
-        <source path="/home/suzuno/Android/AudioStreamingProject/AudioStreaming/src/main/assets" />
+        <source path="/home/alice/AndroidStudioProjects/AudioStreaming/AudioStreaming/src/main/assets" />
     </dataSet>
     <dataSet config="debug" >
-        <source path="/home/suzuno/Android/AudioStreamingProject/AudioStreaming/src/debug/assets" />
+        <source path="/home/alice/AndroidStudioProjects/AudioStreaming/AudioStreaming/src/debug/assets" />
     </dataSet>
 
 </merger>
