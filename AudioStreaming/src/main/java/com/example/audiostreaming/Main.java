@@ -8,9 +8,12 @@ import android.view.View;
 import android.widget.Button;
 
 import android.os.Handler;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class Main extends Activity {
 
@@ -24,7 +27,9 @@ public class Main extends Activity {
 
     public static final String KEY_WIFI = "wifi";
     public static final String KEY_3G = "3g";
-    public static final String KEY_HOSTLIST = "hostlist";
+
+    public static final String KEY_HOST_NAME = "hostname";
+    public static final String KEY_HOST_IP = "hostip";
 
     public static final int EVENT_WLAN_ADDRESS_ACQUIRED = 21;
     public static final int EVENT_UI_UPDATE = 22;
@@ -42,6 +47,7 @@ public class Main extends Activity {
     Handler mHandler;
     NetListener mListener;
     private HostListAdapter mAdapter;
+    private List<Map<String,Object>> mListContent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -164,13 +170,19 @@ public class Main extends Activity {
     }
 
     void tryUpdateHostlist(Bundle data){
-        ArrayList<String> list = data.getStringArrayList(KEY_HOSTLIST);
-        updateHostList(list);
+        updateHostList(data.getString(KEY_HOST_NAME),data.getString(KEY_HOST_IP));
     }
 
-    void updateHostList(ArrayList list){
+    void updateHostList(String host_name,String host_ip){
         if(mAdapter==null){
-            mAdapter = new HostListAdapter();
+            mListContent = new ArrayList<Map<String, Object>>();
+            mAdapter = new HostListAdapter(this,mListContent,R.layout.host_list,new String[]{
+                    KEY_HOST_NAME,KEY_HOST_IP
+            },new int[]{
+                    R.id.host_name,R.id.host_ip
+            });
+            ListView listView = (ListView) findViewById(R.id.netuser_list);
+            listView.setAdapter(mAdapter);
         }
     }
 
@@ -201,6 +213,11 @@ public class Main extends Activity {
                 case EVENT_HOSTLIST_UPDATE:
                     tryUpdateHostlist(msg.getData());
                     break;
+                case EVENT_BUSY:
+                    switchLayout(R.id.busy_frame);
+                    break;
+                case EVENT_RESET:
+                    switchLayout();
             }
         }
     }
